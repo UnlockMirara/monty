@@ -1,51 +1,56 @@
 #include "monty.h"
 #include <stdio.h>
-#define _GNU_SOURCE
 #include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
 
-bus_t bus = {NULL, NULL, NULL, 0};
+#define MAX_LINE_SIZE 1024
 
 /**
-* main - function for monty code interpreter
-* @argc: argument count
-* @argv: argument value
-*
-* Return: 0 on success
-*/
+ * main - Entry point for the Monty code interpreter.
+ * @argc: Argument count.
+ * @argv: Argument vector.
+ *
+ * Return: 0 on success, 1 on failure.
+ */
+
 int main(int argc, char *argv[])
 {
-	char *content;
 	FILE *file;
-	size_t size = 0;
-	ssize_t read_line = 1;
+	char line[MAX_LINE_SIZE];
 	stack_t *stack = NULL;
 	unsigned int counter = 0;
+	size_t line_length;
 
 	if (argc != 2)
 	{
-		fprintf(stderr, "USAGE: monty file\n");
-		exit(EXIT_FAILURE);
+	fprintf(stderr, "USAGE: monty file\n");
+	return (EXIT_FAILURE);
 	}
+
 	file = fopen(argv[1], "r");
-	bus.file = file;
+
 	if (!file)
 	{
-		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
+	fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		return (EXIT_FAILURE);
 	}
-	while (read_line > 0)
+
+	while (fgets(line, sizeof(line), file) != NULL)
 	{
-		content = NULL;
-		read_line = getline(&content, &size, file);
-		bus.content = content;
 		counter++;
-		if (read_line > 0)
+
+	line_length = strlen(line);
+		if (line_length > 0 && line[line_length - 1] == '\n')
 		{
-			execute(content, &stack, counter, file);
+			line[line_length - 1] = '\0';
 		}
-		free(content);
+
+		execute(line, &stack, counter, file);
 	}
-	free_stack(stack);
+
 	fclose(file);
-return (0);
+	free_stack(stack);
+
+	return (EXIT_SUCCESS);
 }
